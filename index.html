@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teoría de la Computación | Estudio</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#121212;--bg2:#1e1e1e;--bg3:#252525;--fg:#e0e0e0;--fg2:#a0a0a0;--accent:#00e676;--err:#ff5252;--warn:#ffab40;--border:#333}
+body{background:var(--bg);color:var(--fg);font-family:'Consolas','Courier New',monospace;min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+button{cursor:pointer;font-family:inherit;border:none;border-radius:6px;transition:all .2s}
+input,textarea{font-family:inherit;background:var(--bg3);color:var(--fg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;outline:none;transition:border .2s}
+input:focus,textarea:focus{border-color:var(--accent)}
+.hidden{display:none!important}
+/* NAV */
+nav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;height:56px}
+nav h1{color:var(--accent);font-size:1.1rem;margin-right:auto}
+.nav-btn{background:none;color:var(--fg2);padding:6px 14px;border-radius:20px;font-size:.85rem;border:1px solid transparent}
+.nav-btn:hover,.nav-btn.active{background:var(--bg3);color:var(--accent);border-color:var(--accent)}
+/* MAIN */
+.page{display:none;padding:24px;max-width:900px;margin:0 auto;animation:fadeIn .3s}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{color:var(--accent);margin-bottom:12px;font-size:1.05rem}
+/* BUTTONS */
+.btn{padding:8px 18px;border-radius:6px;font-size:.9rem}
+.btn-accent{background:var(--accent);color:#000;font-weight:700}
+.btn-accent:hover{background:#00c85a}
+.btn-outline{background:none;color:var(--accent);border:1px solid var(--accent)}
+.btn-outline:hover{background:var(--accent);color:#000}
+.btn-err{background:var(--err);color:#fff}
+.btn-warn{background:var(--warn);color:#000}
+.btn-gray{background:var(--bg3);color:var(--fg)}
+.btn-gray:hover{background:var(--border)}
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:700}
+.badge-ok{background:#1a4a2e;color:var(--accent)}
+.badge-err{background:#4a1a1a;color:var(--err)}
+.badge-warn{background:#4a3800;color:var(--warn)}
+/* HOME */
+.home-hero{text-align:center;padding:40px 0}
+.home-hero h2{font-size:2rem;color:var(--accent);margin-bottom:8px}
+.home-hero p{color:var(--fg2);margin-bottom:24px}
+.modules-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:600px){.modules-grid{grid-template-columns:1fr}}
+.module-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .2s}
+.module-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.module-card .icon{font-size:2.5rem;margin-bottom:12px}
+.module-card h3{color:var(--accent);margin-bottom:6px}
+.module-card p{color:var(--fg2);font-size:.85rem}
+/* STATS */
+.stats-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 20px;flex:1;text-align:center;min-width:100px}
+.stat-box .num{font-size:1.8rem;color:var(--accent);font-weight:700}
+.stat-box .lbl{font-size:.75rem;color:var(--fg2)}
+/* STREAK */
+.streak-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.streak-day{width:18px;height:18px;border-radius:3px;background:var(--bg3)}
+.streak-day.done{background:var(--accent)}
+/* RE MODULE */
+.re-list{list-style:none}
+.re-list li{padding:6px 0;border-bottom:1px solid var(--bg3);display:flex;align-items:center;gap:8px;font-size:.85rem}
+.re-list .tc{font-family:monospace;background:var(--bg3);padding:2px 6px;border-radius:4px;flex:1}
+/* EXERCISE */
+.ex-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.ex-progress{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.ex-progress-bar{height:100%;background:var(--accent);border-radius:3px;transition:width .4s}
+.ex-question{font-size:1.05rem;margin-bottom:16px;line-height:1.6}
+.ex-options{display:flex;flex-direction:column;gap:8px}
+.opt-btn{background:var(--bg3);color:var(--fg);text-align:left;padding:12px 16px;border-radius:8px;border:1px solid var(--border);font-size:.9rem;transition:all .2s}
+.opt-btn:hover:not(:disabled){border-color:var(--accent);background:var(--bg2)}
+.opt-btn.correct{background:#1a4a2e!important;border-color:var(--accent)!important;color:var(--accent)}
+.opt-btn.wrong{background:#4a1a1a!important;border-color:var(--err)!important;color:var(--err)}
+.opt-btn:disabled{cursor:default}
+/* FEEDBACK */
+.feedback-box{margin-top:16px;padding:14px;border-radius:8px;border:1px solid;font-size:.9rem;line-height:1.6}
+.feedback-ok{border-color:var(--accent);background:#0a2a18}
+.feedback-err{border-color:var(--err);background:#2a0a0a}
+.hint-box{margin-top:10px;padding:10px 14px;border-radius:6px;background:var(--bg3);border-left:3px solid var(--warn);font-size:.85rem;color:var(--fg2)}
+/* EXAM */
+.timer{font-size:2rem;font-weight:700;color:var(--accent);text-align:center;margin-bottom:8px;font-variant-numeric:tabular-nums}
+.timer.warn{color:var(--warn)}
+.timer.danger{color:var(--err)}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.result-grid{grid-template-columns:1fr}}
+.result-item{background:var(--bg3);border-radius:8px;padding:12px;font-size:.85rem}
+.result-item .score{font-size:1.4rem;font-weight:700}
+/* REGEX SIMULATOR */
+.sim-input{width:100%;margin-bottom:8px;font-size:1rem}
+.sim-cases{display:flex;flex-direction:column;gap:4px;margin-top:12px;max-height:200px;overflow-y:auto}
+.sim-case{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:4px;font-size:.85rem}
+.sim-case.pass{background:#0d2a1a}
+.sim-case.fail{background:#2a0d0d}
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-btn{padding:8px 16px;background:none;color:var(--fg2);border-radius:6px 6px 0 0;border:1px solid transparent;margin-bottom:-1px}
+.tab-btn.active{color:var(--accent);border-color:var(--border);border-bottom-color:var(--bg2);background:var(--bg2)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+/* RE EXPLANATION */
+.re-explain{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.re-part{padding:4px 8px;border-radius:4px;background:var(--bg3);border:1px solid var(--border);font-size:.8rem;cursor:default}
+.re-part:hover .re-desc{display:block}
+.re-part-wrap{position:relative;display:inline-block}
+/* CHOMSKY */
+.chomsky-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:500px){.chomsky-grid{grid-template-columns:1fr}}
+.chomsky-card{background:var(--bg3);border-radius:8px;padding:14px;border-left:3px solid var(--accent)}
+.chomsky-card h4{color:var(--accent);margin-bottom:6px;font-size:.9rem}
+.chomsky-card p{font-size:.8rem;color:var(--fg2);line-height:1.5}
+/* GRAMMAR */
+.grammar-prod{font-family:monospace;background:var(--bg3);padding:10px 14px;border-radius:6px;margin:10px 0;font-size:.95rem;color:var(--accent)}
+.grammar-prod span{color:var(--fg)}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#555}
+</style>
+</head>
+<body>
+<nav>
+  <h1>&#128187; CompuTeoría</h1>
+  <button class="nav-btn active" onclick="showPage('home')">Inicio</button>
+  <button class="nav-btn" onclick="showPage('re')">Módulo A: RE</button>
+  <button class="nav-btn" onclick="showPage('gram')">Módulo B: Gramáticas</button>
+  <button class="nav-btn" onclick="showPage('exam')">Examen</button>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="page-home" class="page active">
+  <div class="home-hero">
+    <h2>&#127979; Teoría de la Computación</h2>
+    <p>Domina Expresiones Regulares y Gramáticas Formales antes del examen.</p>
+    <div class="stats-row" style="justify-content:center">
+      <div class="stat-box"><div class="num" id="stat-total">0</div><div class="lbl">Ejercicios OK</div></div>
+      <div class="stat-box"><div class="num" id="stat-streak">0</div><div class="lbl">Racha (días)</div></div>
+      <div class="stat-box"><div class="num" id="stat-exams">0</div><div class="lbl">Exámenes</div></div>
+    </div>
+    <div id="streak-visual" class="streak-row" style="justify-content:center;margin-bottom:20px"></div>
+  </div>
+  <div class="modules-grid">
+    <div class="module-card" onclick="showPage('re')">
+      <div class="icon">&#127381;</div>
+      <h3>Módulo A: Expresiones Regulares</h3>
+      <p>Simulador interactivo · 10 ejercicios con pistas · Desglose de RE</p>
+    </div>
+    <div class="module-card" onclick="showPage('gram')">
+      <div class="icon">&#128196;</div>
+      <h3>Módulo B: Gramáticas</h3>
+      <p>Jerarquía de Chomsky · Derivaciones · Tipos de gramáticas</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>&#9203; Iniciar Examen</h2>
+    <p style="color:var(--fg2);margin-bottom:12px">15 reactivos aleatorios · 20 minutos · Reporte por tema</p>
+    <button class="btn btn-accent" onclick="startExam()">Comenzar Examen</button>
+  </div>
+</div>
+<!-- RE PAGE -->
+<div id="page-re" class="page">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('re','simulator')">Simulador</button>
+    <button class="tab-btn" onclick="switchTab('re','practice')">Práctica</button>
+  </div>
+  <div id="re-tab-simulator" class="tab-content active">
+    <div class="card">
+      <h2>&#127381; Simulador de Expresiones Regulares</h2>
+      <p style="color:var(--fg2);font-size:.85rem;margin-bottom:12px">Escribe tu RE y pruébala contra los casos de prueba.</p>
+      <select id="sim-preset" onchange="loadPreset()" style="background:var(--bg3);color:var(--fg);border:1px solid var(--border);border-radius:6px;padding:8px;width:100%;margin-bottom:8px">
+        <option value="">— Selecciona un ejercicio —</option>
+        <option value="curp">CURP (18 caracteres)</option>
+        <option value="email">Email</option>
+        <option value="pyvar">Variable Python</option>
+        <option value="cp">Código Postal (5 dígitos)</option>
+        <option value="hex">Color Hexadecimal</option>
+        <option value="rfc">RFC (13 caracteres)</option>
+        <option value="ipv4">Dirección IPv4</option>
+        <option value="fecha">Fecha (DD/MM/YYYY)</option>
+        <option value="pass">Contraseña Compleja</option>
+        <option value="tel">Teléfono (10 dígitos)</option>
+      </select>
+      <input type="text" id="sim-re" class="sim-input" placeholder="Escribe tu expresión regular aquí..." oninput="runSimulator()">
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button class="btn btn-outline" onclick="showREHint()">Ver solución</button>
+        <button class="btn btn-gray" onclick="runSimulator()">&#9654; Probar</button>
+      </div>
+      <div id="sim-result"></div>
+      <div id="sim-cases" class="sim-cases"></div>
+      <div id="sim-explain" style="margin-top:12px"></div>
+    </div>
+  </div>
+  <div id="re-tab-practice" class="tab-content">
+    <div class="card" id="re-practice-card">
+      <div class="ex-header">
+        <span id="re-qnum" style="color:var(--fg2);font-size:.85rem">Pregunta 1/10</span>
+        <div class="ex-progress"><div class="ex-progress-bar" id="re-prog" style="width:0%"></div></div>
+        <span id="re-score-disp" style="color:var(--accent);font-size:.85rem">0 ✓</span>
+      </div>
+      <div id="re-question" class="ex-question"></div>
+      <div id="re-options" class="ex-options"></div>
+      <div id="re-feedback"></div>
+      <div style="margin-top:14px;display:flex;gap:8px" id="re-actions">
+        <button class="btn btn-accent hidden" id="re-next-btn" onclick="nextREQuestion()">Siguiente &#8594;</button>
+        <button class="btn btn-warn hidden" id="re-retry-btn" onclick="retryRE()">Reintentar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- GRAMMAR PAGE -->
+<div id="page-gram" class="page">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('gram','chomsky')">Jerarquía Chomsky</button>
+    <button class="tab-btn" onclick="switchTab('gram','practice')">Práctica</button>
+  </div>
+  <div id="gram-tab-chomsky" class="tab-content active">
+    <div class="card">
+      <h2>&#128196; Jerarquía de Chomsky</h2>
+      <div class="chomsky-grid">
+        <div class="chomsky-card">
+          <h4>Tipo 0 — Sin restricción</h4>
+          <p>Gramáticas irrestrictas. Cualquier producción α→β donde α,β ∈ (V∪T)*. Reconocida por Máquinas de Turing.</p>
+        </div>
+        <div class="chomsky-card" style="border-color:#ffab40">
+          <h4>Tipo 1 — Sensible al contexto</h4>
+          <p>αAβ → αγβ donde |γ|≥1. La cadena de producción no puede acortarse. Reconocida por Autómatas linealmente acotados.</p>
+        </div>
+        <div class="chomsky-card" style="border-color:#40c4ff">
+          <h4>Tipo 2 — Libre de contexto</h4>
+          <p>A → γ, donde A es un único No-terminal. Reconocida por Autómatas de Pila (PDA).</p>
+        </div>
+        <div class="chomsky-card" style="border-color:#ea80fc">
+          <h4>Tipo 3 — Regular</h4>
+          <p>A → aB o A → a (lineal derecha). Reconocida por Autómatas Finitos (DFA/NFA). Equivalente a ER.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>&#128270; Quiz Rápido — Jerarquía</h2>
+      <div id="chomsky-quiz"></div>
+    </div>
+  </div>
+  <div id="gram-tab-practice" class="tab-content">
+    <div class="card" id="gram-practice-card">
+      <div class="ex-header">
+        <span id="gram-qnum" style="color:var(--fg2);font-size:.85rem">Pregunta 1/12</span>
+        <div class="ex-progress"><div class="ex-progress-bar" id="gram-prog" style="width:0%"></div></div>
+        <span id="gram-score-disp" style="color:var(--accent);font-size:.85rem">0 ✓</span>
+      </div>
+      <div id="gram-question" class="ex-question"></div>
+      <div id="gram-options" class="ex-options"></div>
+      <div id="gram-feedback"></div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button class="btn btn-accent hidden" id="gram-next-btn" onclick="nextGramQuestion()">Siguiente &#8594;</button>
+        <button class="btn btn-warn hidden" id="gram-retry-btn" onclick="retryGram()">Reintentar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- EXAM PAGE -->
+<div id="page-exam" class="page">
+  <div id="exam-start" class="card" style="text-align:center;padding:40px">
+    <h2 style="font-size:1.5rem;margin-bottom:12px">&#9203; Modo Examen</h2>
+    <p style="color:var(--fg2);margin-bottom:20px">15 reactivos aleatorios de ambos módulos.<br>Tienes <strong>20 minutos</strong>. ¡Buena suerte, Massimo!</p>
+    <button class="btn btn-accent" style="font-size:1rem;padding:12px 30px" onclick="startExam()">Iniciar Examen</button>
+  </div>
+  <div id="exam-running" class="hidden">
+    <div class="timer" id="exam-timer">20:00</div>
+    <div style="text-align:center;color:var(--fg2);font-size:.85rem;margin-bottom:8px" id="exam-counter">Pregunta 1 de 15</div>
+    <div class="ex-progress" style="margin-bottom:16px"><div class="ex-progress-bar" id="exam-prog"></div></div>
+    <div class="card" id="exam-question-card">
+      <div id="exam-question" class="ex-question"></div>
+      <div id="exam-options" class="ex-options"></div>
+    </div>
+    <div style="text-align:right;margin-top:12px">
+      <button class="btn btn-err" onclick="if(confirm('¿Terminar examen?'))finishExam()">Terminar</button>
+    </div>
+  </div>
+  <div id="exam-results" class="hidden">
+    <div class="card" style="text-align:center">
+      <h2 style="font-size:1.4rem">&#127941; Resultados del Examen</h2>
+      <div style="font-size:3rem;font-weight:700;color:var(--accent);margin:12px 0" id="exam-final-score"></div>
+      <div style="color:var(--fg2);margin-bottom:20px" id="exam-time-used"></div>
+      <div class="result-grid" id="exam-breakdown"></div>
+      <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-accent" onclick="startExam()">Repetir</button>
+        <button class="btn btn-outline" onclick="showPage('home')">Inicio</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// ===================== DATA =====================
+const PRESETS = {
+  curp:{
+    name:"CURP",
+    pattern:String.raw`^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$`,
+    valid:["LOOA531113HTCPNR09","GODE561231HDFRRB08","HERA850217MDFGRM05"],
+    invalid:["LOOA531113","looa531113htcpnr09","LOOA531113HTCPNR0","LOOA531113HTCPNR099"],
+    explain:[
+      {re:"^",desc:"Ancla de inicio"},
+      {re:"[A-Z]{4}",desc:"4 letras mayúsculas (iniciales del nombre)"},
+      {re:"\\d{6}",desc:"6 dígitos (fecha AAMMDD)"},
+      {re:"[HM]",desc:"H o M (sexo)"},
+      {re:"[A-Z]{5}",desc:"5 letras (entidad federativa + consonantes)"},
+      {re:"[A-Z0-9]",desc:"1 letra o dígito (homoclave 1)"},
+      {re:"\\d",desc:"1 dígito (homoclave 2)"},
+      {re:"$",desc:"Ancla de fin"}
+    ]
+  },
+  email:{
+    name:"Email",
+    pattern:String.raw`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`,
+    valid:["usuario@correo.com","mass.dev@gmail.com","hello+tag@sub.domain.org"],
+    invalid:["usuario@","@correo.com","correo.com","usuario @correo.com"],
+    explain:[
+      {re:"^[a-zA-Z0-9._%+\\-]+",desc:"1+ chars alfanuméricos o . _ % + - (parte local)"},
+      {re:"@",desc:"Literal @ obligatorio"},
+      {re:"[a-zA-Z0-9.\\-]+",desc:"Dominio: letras, números, puntos, guiones"},
+      {re:"\\.",desc:"Punto literal antes del TLD"},
+      {re:"[a-zA-Z]{2,}$",desc:"TLD de mínimo 2 letras (.com, .mx, .org)"}
+    ]
+  },
+  pyvar:{
+    name:"Variable Python",
+    pattern:String.raw`^[a-zA-Z_][a-zA-Z0-9_]*$`,
+    valid:["variable","_privado","miVar","var123","_x9"],
+    invalid:["123var","mi-var","mi var","class",""],
+    explain:[
+      {re:"^[a-zA-Z_]",desc:"Primer carácter: letra o guion bajo (no puede ser dígito)"},
+      {re:"[a-zA-Z0-9_]*$",desc:"Resto: letras, dígitos o guion bajo (0 o más)"}
+    ]
+  },
+  cp:{
+    name:"Código Postal",
+    pattern:String.raw`^\d{5}$`,
+    valid:["01000","64000","06600","99999","00001"],
+    invalid:["1234","123456","0100A","01 000"],
+    explain:[
+      {re:"^",desc:"Ancla de inicio"},
+      {re:"\\d{5}",desc:"Exactamente 5 dígitos"},
+      {re:"$",desc:"Ancla de fin (no permite más caracteres)"}
+    ]
+  },
+  hex:{
+    name:"Color Hexadecimal",
+    pattern:String.raw`^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$`,
+    valid:["#fff","#FFF","#00e676","#1a2b3c","#ABC"],
+    invalid:["fff","#gg0000","#12345","#1234567","00e676"],
+    explain:[
+      {re:"^#",desc:"# obligatorio al inicio"},
+      {re:"[A-Fa-f0-9]{6}",desc:"6 caracteres hex (color completo)"},
+      {re:"|",desc:"OR lógico: acepta una u otra forma"},
+      {re:"[A-Fa-f0-9]{3}",desc:"3 caracteres hex (forma abreviada)"},
+      {re:"$",desc:"Fin de cadena"}
+    ]
+  },
+  rfc:{
+    name:"RFC",
+    pattern:String.raw`^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$`,
+    valid:["GODE561231GR8","AAA010101AAA","XAXX010101000"],
+    invalid:["GODE561231","gode561231gr8","GODE561231GR89","GO561231GR8"],
+    explain:[
+      {re:"^[A-ZÑ&]{3,4}",desc:"3 o 4 letras mayúsculas (incluye Ñ y &)"},
+      {re:"\\d{6}",desc:"6 dígitos de fecha (AAMMDD)"},
+      {re:"[A-Z0-9]{3}$",desc:"3 caracteres alfanuméricos (homoclave)"}
+    ]
+  },
+  ipv4:{
+    name:"IPv4",
+    pattern:String.raw`^((25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$`,
+    valid:["192.168.1.1","0.0.0.0","255.255.255.255","10.0.0.1"],
+    invalid:["256.0.0.1","192.168.1","192.168.1.1.1","192.168.01.1"],
+    explain:[
+      {re:"25[0-5]",desc:"250-255"},
+      {re:"2[0-4]\\d",desc:"200-249"},
+      {re:"1\\d{2}",desc:"100-199"},
+      {re:"[1-9]\\d",desc:"10-99"},
+      {re:"\\d",desc:"0-9"},
+      {re:"(\\.){3}",desc:"Tres puntos separadores"},
+      {re:"$",desc:"Termina con el último octeto"}
+    ]
+  },
+  fecha:{
+    name:"Fecha DD/MM/YYYY",
+    pattern:String.raw`^(0[1-9]|[12]\d|3[01])/(0[1-9]|1[0-2])/(19|20)\d{2}$`,
+    valid:["01/01/2000","31/12/2024","28/02/1999","15/06/2023"],
+    invalid:["1/1/2000","00/01/2000","32/01/2000","01/13/2000","01/01/1899"],
+    explain:[
+      {re:"(0[1-9]|[12]\\d|3[01])",desc:"Día: 01-09, 10-29 o 30-31"},
+      {re:"/",desc:"Separador literal /"},
+      {re:"(0[1-9]|1[0-2])",desc:"Mes: 01-09 o 10-12"},
+      {re:"(19|20)\\d{2}",desc:"Año: 1900-2099"}
+    ]
+  },
+  pass:{
+    name:"Contraseña Compleja",
+    pattern:String.raw`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$`,
+    valid:["MiPass1!","Segura9@pass","Admin123$","X9!abcDE"],
+    invalid:["password","Password1","password1!","PASS1!","Short1!"],
+    explain:[
+      {re:"(?=.*[a-z])",desc:"Lookahead: debe haber al menos 1 minúscula"},
+      {re:"(?=.*[A-Z])",desc:"Lookahead: debe haber al menos 1 mayúscula"},
+      {re:"(?=.*\\d)",desc:"Lookahead: debe haber al menos 1 dígito"},
+      {re:"(?=.*[!@#$%^&*])",desc:"Lookahead: debe haber al menos 1 carácter especial"},
+      {re:".{8,}$",desc:"Mínimo 8 caracteres en total"}
+    ]
+  },
+  tel:{
+    name:"Teléfono (10 dígitos)",
+    pattern:String.raw`^\d{10}$`,
+    valid:["8112345678","5512345678","3312345678","9812345678"],
+    invalid:["811234567","81123456789","811234567a","811 234 5678"],
+    explain:[
+      {re:"^",desc:"Ancla de inicio"},
+      {re:"\\d{10}",desc:"Exactamente 10 dígitos consecutivos"},
+      {re:"$",desc:"Ancla de fin, sin espacios ni guiones"}
+    ]
+  }
+};
+
+const RE_QUESTIONS = [
+  {
+    q:"¿Qué expresión regular valida exactamente un CURP mexicano (18 caracteres)?",
+    opts:["^[A-Z]{4}\\d{6}[HM][A-Z]{5}[A-Z0-9]\\d$","^[A-Z]{4}\\d{6}[HM][A-Z]{6}$","^[A-Za-z]{4}\\d{6}[HM][A-Z]{5}\\d{2}$","^[A-Z]{4}\\d{8}[A-Z]{6}$"],
+    ans:0, topic:"CURP",
+    hint:"La CURP: 4 letras + 6 dígitos (fecha) + H/M + 5 letras + 1 homoclave letra/dígito + 1 dígito.",
+    explain:"^[A-Z]{4} — 4 iniciales | \\d{6} — fecha AAMMDD | [HM] — sexo | [A-Z]{5} — entidad+consonantes | [A-Z0-9] — homoclave 1 | \\d$ — homoclave 2"
+  },
+  {
+    q:"¿Qué símbolo en RE representa 'exactamente n repeticiones'?",
+    opts:["{n}","*n","#n","(n)"],
+    ans:0, topic:"Sintaxis RE",
+    hint:"Los cuantificadores de precisión usan llaves {}.",
+    explain:"{n} — exactamente n veces | {n,m} — entre n y m | {n,} — n o más | * — cero o más | + — uno o más"
+  },
+  {
+    q:"¿Cuál RE valida un email básico (usuario@dominio.ext)?",
+    opts:["^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$","^[a-z]+@[a-z]+$","^\\w+@\\w+\\.[a-z]$","^.+@.+$"],
+    ans:0, topic:"Email",
+    hint:"Necesitas anclas ^ y $, clase de chars para usuario, @ literal, dominio y TLD de 2+ letras.",
+    explain:"^[a-zA-Z0-9._%+\\-]+ — usuario | @ — arroba | [a-zA-Z0-9.\\-]+ — dominio | \\.[a-zA-Z]{2,}$ — .com, .mx"
+  },
+  {
+    q:"¿Qué anclas ^ y $ garantizan en una RE?",
+    opts:["Que la cadena empiece y termine exactamente ahí","Que haya al menos un carácter","Que se ignore mayúsculas/minúsculas","Que se busque en multilinea"],
+    ans:0, topic:"Sintaxis RE",
+    hint:"Sin ^ y $ la RE podría hacer match dentro de una cadena más larga.",
+    explain:"^ = ancla de inicio de cadena | $ = ancla de fin de cadena | Juntas obligan a que TODA la cadena coincida"
+  },
+  {
+    q:"Para validar variables Python (letras/_ al inicio, luego letras/dígitos/_), ¿cuál RE es correcta?",
+    opts:["^[a-zA-Z_][a-zA-Z0-9_]*$","^[a-zA-Z][a-zA-Z0-9]*$","^\\w+$","^[a-z_]+$"],
+    ans:0, topic:"Variable Python",
+    hint:"El primer carácter no puede ser dígito. \\w incluye dígitos al inicio.",
+    explain:"^[a-zA-Z_] — primer char: letra o guion bajo | [a-zA-Z0-9_]* — resto: cualquier combo | $ — fin"
+  },
+  {
+    q:"¿Qué RE acepta colores hexadecimales como #fff y #1a2b3c?",
+    opts:["^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$","^#[A-F0-9]{6}$","^#\\w{3,6}$","^#[0-9a-f]+$"],
+    ans:0, topic:"Color Hex",
+    hint:"Debe aceptar formato corto (#fff) y largo (#ffffff). El # es obligatorio.",
+    explain:"^# — # obligatorio | [A-Fa-f0-9]{6} — 6 hex | | — OR | [A-Fa-f0-9]{3} — 3 hex abreviado | $ — fin"
+  },
+  {
+    q:"¿Cuál cuantificador en RE significa 'uno o más'?",
+    opts:["+","*","?","{1}"],
+    ans:0, topic:"Sintaxis RE",
+    hint:"Es diferente a * (cero o más) y ? (cero o uno).",
+    explain:"+ = uno o más | * = cero o más | ? = cero o uno | {n,} = n o más"
+  },
+  {
+    q:"Para una contraseña segura (mín 8 chars, mayúscula, minúscula, dígito, especial), ¿qué técnica de RE se usa?",
+    opts:["Lookahead positivo (?=...)","Grupos de captura (...)","Alternancia |","Clases negadas [^...]"],
+    ans:0, topic:"Contraseña",
+    hint:"Necesitas verificar múltiples condiciones sin consumir caracteres.",
+    explain:"(?=.*[A-Z]) — lookahead: hay una mayúscula | (?=.*\\d) — hay un dígito | (?=.*[!@#...]) — hay especial"
+  },
+  {
+    q:"¿Qué RE valida una IPv4 (ej. 192.168.1.1)?",
+    opts:[
+      "^((25[0-5]|2[0-4]\\d|1\\d{2}|[1-9]\\d|\\d)\\.){3}(25[0-5]|2[0-4]\\d|1\\d{2}|[1-9]\\d|\\d)$",
+      "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$",
+      "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "^\\d+\\.\\d+\\.\\d+\\.\\d+$"
+    ],
+    ans:0, topic:"IPv4",
+    hint:"Cada octeto debe estar entre 0 y 255. \\d{1,3} acepta 999 que no es válido.",
+    explain:"25[0-5]=250-255 | 2[0-4]\\d=200-249 | 1\\d{2}=100-199 | [1-9]\\d=10-99 | \\d=0-9"
+  },
+  {
+    q:"¿Qué RE valida fechas DD/MM/YYYY del año 1900-2099?",
+    opts:[
+      "^(0[1-9]|[12]\\d|3[01])/(0[1-9]|1[0-2])/(19|20)\\d{2}$",
+      "^\\d{2}/\\d{2}/\\d{4}$",
+      "^[0-3]\\d/[01]\\d/\\d{4}$",
+      "^\\d{1,2}/\\d{1,2}/\\d{4}$"
+    ],
+    ans:0, topic:"Fecha",
+    hint:"Necesitas controlar el rango de días (01-31), meses (01-12) y años (1900-2099).",
+    explain:"(0[1-9]|[12]\\d|3[01]) — días 01-31 | (0[1-9]|1[0-2]) — meses | (19|20)\\d{2} — años 1900-2099"
+  }
+];
+
+const GRAM_QUESTIONS = [
+  {
+    q:"La gramática con producción <strong>S → aSb | λ</strong> genera el lenguaje {aⁿbⁿ | n≥0}. ¿De qué tipo es?",
+    opts:["Tipo 2 (Libre de contexto)","Tipo 3 (Regular)","Tipo 1 (Sensible al contexto)","Tipo 0"],
+    ans:0, topic:"Gramáticas",
+    hint:"¿Puede un autómata finito reconocer {aⁿbⁿ}? ¿Se necesita memoria?",
+    explain:"S→aSb tiene UN no-terminal a la izquierda (Tipo 2). No es regular porque necesita memoria para contar. Un PDA puede reconocerla."
+  },
+  {
+    q:"¿Cuál es la forma general de una producción en una gramática <em>regular lineal derecha</em>?",
+    opts:["A → aB o A → a","A → Ba o A → a","A → γ (γ cualquier cadena)","αA → αγ"],
+    ans:0, topic:"Gramáticas",
+    hint:"En gramáticas regulares lineales derechas el no-terminal siempre va al final.",
+    explain:"A→aB: terminal seguido de no-terminal | A→a: producción simple | El no-terminal SIEMPRE a la derecha del terminal"
+  },
+  {
+    q:"¿Qué autómata reconoce los lenguajes libres de contexto (Tipo 2)?",
+    opts:["Autómata de Pila (PDA)","Autómata Finito (DFA)","Máquina de Turing","Autómata linealmente acotado"],
+    ans:0, topic:"Automátas",
+    hint:"Necesitas una estructura de datos adicional para lenguajes de contexto libre.",
+    explain:"PDA = Autómata Finito + Pila (stack). La pila permite recordar cantidad de símbolos, necesario para aⁿbⁿ."
+  },
+  {
+    q:"La gramática <strong>S → SS | (S) | λ</strong> genera paréntesis balanceados. ¿Por qué NO es regular?",
+    opts:["Necesita memoria para contar pares de paréntesis","Tiene recursión a la izquierda","Usa el símbolo λ","Tiene más de una producción"],
+    ans:0, topic:"Gramáticas",
+    hint:"Los lenguajes regulares se reconocen con memoria finita.",
+    explain:"(){} necesita contar. Con n paréntesis abiertos necesitas recordar n. Eso requiere pila (Tipo 2), no es posible con DFA."
+  },
+  {
+    q:"¿Cuál de estas producciones corresponde a una gramática Tipo 1 (Sensible al contexto)?",
+    opts:["aSb → aTb","S → aSb | λ","A → aB | a","S → SS | (S)"],
+    ans:0, topic:"Gramáticas",
+    hint:"En Tipo 1 la producción depende del CONTEXTO alrededor del no-terminal.",
+    explain:"aSb→aTb: el contexto 'a_b' determina qué hacer con S. La longitud nunca disminuye. Esto es sensibilidad al contexto."
+  },
+  {
+    q:"La gramática <strong>S → aS | a</strong> genera el lenguaje:",
+    opts:["{aⁿ | n≥1} = a, aa, aaa...","{ } (vacío)","aⁿbⁿ | n≥0","a*b+"],
+    ans:0, topic:"Gramáticas",
+    hint:"Aplica las producciones: S→aS→aaS→aaa. ¿Cuándo termina?",
+    explain:"S→aS→aaS→...→aa...aS→aa...a. Termina con S→a. Genera 1 o más 'a'. Equivale a la RE a+"
+  },
+  {
+    q:"¿La gramática regular S→aS|bS|a|b genera qué lenguaje?",
+    opts:["(a|b)+ — cadenas no vacías de a y b","(a|b)* — incluyendo la vacía","Solo 'a' y 'b'","Solo cadenas de igual cantidad de a y b"],
+    ans:0, topic:"Gramáticas",
+    hint:"¿Puede generar la cadena vacía? ¿Qué pasa cuando aplicas S→a o S→b?",
+    explain:"S→a genera 'a', S→aS→ab genera 'ab', etc. Siempre termina con al menos un símbolo. Equivale a (a|b)+"
+  },
+  {
+    q:"Para la gramática S → aSa | bSb | λ, ¿qué cadenas genera?",
+    opts:["Palíndromos pares sobre {a,b}","Todas las cadenas sobre {a,b}","Solo cadenas de a","Cadenas del tipo aⁿbⁿ"],
+    ans:0, topic:"Gramáticas",
+    hint:"Aplica: S→aSa→abSba→ab(λ)ba = 'abba'. ¿Qué patrón notas?",
+    explain:"S→aSa: rodea con a-a | S→bSb: rodea con b-b | S→λ: termina. Resultado: palíndromos pares (se leen igual en ambas dir.)"
+  },
+  {
+    q:"¿Cuál es la diferencia clave entre gramática Tipo 2 y Tipo 3?",
+    opts:["Tipo 3 restringe el no-terminal a solo el extremo derecho o izquierdo","Tipo 3 no usa no-terminales","Tipo 2 no puede ser ambigua","Tipo 3 permite producciones vacías"],
+    ans:0, topic:"Gramáticas",
+    hint:"Piensa en dónde puede aparecer el no-terminal en la parte derecha de la producción.",
+    explain:"Tipo 2: A→γ (γ cualquier cosa). Tipo 3: A→aB (lineal derecha) o A→Ba (lineal izq.). El solo puede haber UN no-terminal al final o inicio."
+  },
+  {
+    q:"La producción S → aSbc | abc pertenece a qué tipo de gramática de Chomsky?",
+    opts:["Tipo 2 (Libre de contexto)","Tipo 3 (Regular)","Tipo 1 (Sensible al contexto)","Ninguno de los anteriores"],
+    ans:0, topic:"Gramáticas",
+    hint:"¿Cuántos no-terminales hay a la izquierda de cada producción?",
+    explain:"S→aSbc: UN solo NT a la izquierda (S). Tipo 2. Genera {aⁿbcⁿ | n≥1}. No es Tipo 3 porque el NT no está al extremo derecho solo."
+  },
+  {
+    q:"¿Qué significa que un lenguaje sea 'Regular'?",
+    opts:["Puede ser reconocido por un DFA y descrito con una ER","Solo puede describirse con gramáticas","Tiene infinitos estados","No puede tener recursión"],
+    ans:0, topic:"Gramáticas",
+    hint:"Recuerda el Teorema de Kleene: RE = Gramática Tipo 3 = DFA = NFA.",
+    explain:"Teorema de Kleene: Los 4 formalismos son equivalentes: Expresión Regular = Gramática Regular = DFA = NFA"
+  },
+  {
+    q:"Para la gramática S → aB, B → bB | b, ¿qué lenguaje genera?",
+    opts:["ab, abb, abbb... = ab+","a, ab, abb...","aa, ab, bb","Palíndromos"],
+    ans:0, topic:"Gramáticas",
+    hint:"Sigue las producciones: S→aB→ab | S→aB→abB→abb...",
+    explain:"S→aB: siempre empieza con 'a'. B→bB|b: genera 1 o más 'b'. Total: a seguida de b+ = {abⁿ | n≥1}"
+  }
+];
+
+const CHOMSKY_QUIZ = [
+  {q:"¿Qué tipo de gramática usa la forma αAβ → αγβ?",opts:["Tipo 1","Tipo 2","Tipo 3","Tipo 0"],ans:0},
+  {q:"¿Qué autómata reconoce gramáticas Tipo 3?",opts:["Autómata Finito","Autómata de Pila","Máquina de Turing","LBA"],ans:0},
+  {q:"Una gramática libre de contexto corresponde a:",opts:["Tipo 2","Tipo 1","Tipo 3","Tipo 0"],ans:0},
+  {q:"¿El lenguaje {aⁿbⁿ} es regular?",opts:["No, es libre de contexto","Sí, es regular","Es sensible al contexto","No tiene tipo"],ans:0},
+  {q:"La jerarquía de Chomsky tiene cuántos niveles:",opts:["4","3","5","2"],ans:0}
+];
+
+// ===================== STATE =====================
+let progress = JSON.parse(localStorage.getItem('ct_progress')||'{}');
+// {total:0, streak:0, lastDay:'', days:[], exams:0, re_score:0, gram_score:0}
+function saveProgress(){localStorage.setItem('ct_progress',JSON.stringify(progress));}
+function incTotal(){progress.total=(progress.total||0)+1;updateStreak();saveProgress();renderStats();}
+function updateStreak(){
+  const today=new Date().toDateString();
+  if(!progress.days)progress.days=[];
+  if(progress.lastDay===today)return;
+  const yesterday=new Date(Date.now()-86400000).toDateString();
+  if(progress.lastDay===yesterday){progress.streak=(progress.streak||0)+1;}
+  else{progress.streak=1;}
+  progress.lastDay=today;
+  if(!progress.days.includes(today))progress.days.push(today);
+  if(progress.days.length>28)progress.days.shift();
+}
+function renderStats(){
+  document.getElementById('stat-total').textContent=progress.total||0;
+  document.getElementById('stat-streak').textContent=progress.streak||0;
+  document.getElementById('stat-exams').textContent=progress.exams||0;
+  const sv=document.getElementById('streak-visual');
+  if(!sv)return;
+  sv.innerHTML='';
+  const days=progress.days||[];
+  for(let i=0;i<28;i++){
+    const d=document.createElement('div');
+    d.className='streak-day'+(days.length>i&&days[i]?' done':'');
+    sv.appendChild(d);
+  }
+}
+
+// ===================== NAV =====================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const map={home:0,re:1,gram:2,exam:3};
+  document.querySelectorAll('.nav-btn')[map[id]].classList.add('active');
+  if(id==='re')initREPractice();
+  if(id==='gram'){initChomsky();initGramPractice();}
+  if(id==='exam')showExamStart();
+}
+function switchTab(mod,tab){
+  document.querySelectorAll(`#page-${mod} .tab-btn`).forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll(`#page-${mod} .tab-content`).forEach(c=>c.classList.remove('active'));
+  document.getElementById(mod+'-tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ===================== SIMULATOR =====================
+let simPreset=null;
+function loadPreset(){
+  const key=document.getElementById('sim-preset').value;
+  simPreset=PRESETS[key]||null;
+  document.getElementById('sim-re').value='';
+  document.getElementById('sim-result').innerHTML='';
+  document.getElementById('sim-cases').innerHTML='';
+  document.getElementById('sim-explain').innerHTML='';
+  if(!simPreset)return;
+}
+function runSimulator(){
+  if(!simPreset)return;
+  const raw=document.getElementById('sim-re').value.trim();
+  if(!raw){document.getElementById('sim-cases').innerHTML='';return;}
+  let re;
+  try{re=new RegExp(raw);}catch(e){
+    document.getElementById('sim-result').innerHTML='<span class="badge badge-err">RE inválida: '+e.message+'</span>';
+    return;
+  }
+  const allCases=[...simPreset.valid.map(v=>({str:v,expected:true})),...simPreset.invalid.map(v=>({str:v,expected:false}))];
+  let correct=0;
+  const html=allCases.map(c=>{
+    const m=re.test(c.str);
+    const ok=m===c.expected;
+    if(ok)correct++;
+    const icon=ok?'✓':'✗';
+    const cls=ok?'pass':'fail';
+    const exp=c.expected?'<span class="badge badge-ok">válido</span>':'<span class="badge badge-err">inválido</span>';
+    const match=m?'<span class="badge badge-ok">match</span>':'<span class="badge badge-err">no match</span>';
+    return `<div class="sim-case ${cls}">${icon} <code>${c.str}</code> ${exp} → ${match}</div>`;
+  }).join('');
+  const pct=Math.round(correct/allCases.length*100);
+  document.getElementById('sim-result').innerHTML=`<div class="badge ${pct===100?'badge-ok':pct>=50?'badge-warn':'badge-err'}" style="font-size:.9rem">${correct}/${allCases.length} casos correctos (${pct}%)</div>`;
+  document.getElementById('sim-cases').innerHTML=html;
+  if(pct===100)renderExplain(simPreset.explain);
+}
+function showREHint(){
+  if(!simPreset)return;
+  document.getElementById('sim-re').value=simPreset.pattern;
+  runSimulator();
+  renderExplain(simPreset.explain);
+}
+function renderExplain(parts){
+  const html='<div class="card" style="margin-top:0"><h2>Desglose de la RE</h2><div class="re-explain">'+
+    parts.map(p=>`<div class="re-part" title="${p.desc}"><code>${p.re}</code><br><small style="color:var(--fg2)">${p.desc}</small></div>`).join('')+
+    '</div></div>';
+  document.getElementById('sim-explain').innerHTML=html;
+}
+
+// ===================== RE PRACTICE =====================
+let reIdx=0,reScore=0,reAnswered=false;
+function initREPractice(){
+  reIdx=0;reScore=0;reAnswered=false;
+  renderREQuestion();
+}
+function renderREQuestion(){
+  const q=RE_QUESTIONS[reIdx];
+  document.getElementById('re-qnum').textContent=`Pregunta ${reIdx+1}/${RE_QUESTIONS.length}`;
+  document.getElementById('re-prog').style.width=(reIdx/RE_QUESTIONS.length*100)+'%';
+  document.getElementById('re-score-disp').textContent=reScore+' ✓';
+  document.getElementById('re-question').innerHTML=`<span class="badge badge-warn">${q.topic}</span><br><br>${q.q}`;
+  document.getElementById('re-options').innerHTML=q.opts.map((o,i)=>
+    `<button class="opt-btn" onclick="answerRE(${i})" id="re-opt-${i}">${o}</button>`
+  ).join('');
+  document.getElementById('re-feedback').innerHTML='';
+  document.getElementById('re-next-btn').classList.add('hidden');
+  document.getElementById('re-retry-btn').classList.add('hidden');
+  reAnswered=false;
+}
+function answerRE(i){
+  if(reAnswered)return;
+  reAnswered=true;
+  const q=RE_QUESTIONS[reIdx];
+  const correct=i===q.ans;
+  if(correct){reScore++;incTotal();}
+  document.querySelectorAll('.opt-btn').forEach((b,idx)=>{
+    b.disabled=true;
+    if(idx===q.ans)b.classList.add('correct');
+    else if(idx===i&&!correct)b.classList.add('wrong');
+  });
+  let fb=correct
+    ?`<div class="feedback-box feedback-ok">✓ <strong>¡Correcto!</strong><br>${q.explain}</div>`
+    :`<div class="feedback-box feedback-err">✗ <strong>Incorrecto.</strong><div class="hint-box">💡 ${q.hint}</div></div>`;
+  document.getElementById('re-feedback').innerHTML=fb;
+  document.getElementById('re-next-btn').classList.remove('hidden');
+  if(!correct)document.getElementById('re-retry-btn').classList.remove('hidden');
+}
+function nextREQuestion(){
+  reIdx=(reIdx+1)%RE_QUESTIONS.length;
+  renderREQuestion();
+}
+function retryRE(){renderREQuestion();}
+
+// ===================== CHOMSKY QUIZ =====================
+let chIdx=0,chAnswered=false;
+function initChomsky(){
+  chIdx=0;chAnswered=false;
+  renderChomsky();
+}
+function renderChomsky(){
+  const q=CHOMSKY_QUIZ[chIdx];
+  const html=`<p style="margin-bottom:12px"><strong>${chIdx+1}. ${q.q}</strong></p>
+    <div class="ex-options">${q.opts.map((o,i)=>`<button class="opt-btn" onclick="answerChomsky(${i})" id="ch-opt-${i}">${o}</button>`).join('')}</div>
+    <div id="ch-feedback" style="margin-top:10px"></div>
+    <div style="margin-top:10px;display:flex;gap:8px" id="ch-nav">
+      <button class="btn btn-gray hidden" id="ch-next-btn" onclick="nextChomsky()">Siguiente →</button>
+    </div>`;
+  document.getElementById('chomsky-quiz').innerHTML=html;
+  chAnswered=false;
+}
+function answerChomsky(i){
+  if(chAnswered)return;
+  chAnswered=true;
+  const q=CHOMSKY_QUIZ[chIdx];
+  const ok=i===q.ans;
+  document.querySelectorAll('#chomsky-quiz .opt-btn').forEach((b,idx)=>{
+    b.disabled=true;
+    if(idx===q.ans)b.classList.add('correct');
+    else if(idx===i&&!ok)b.classList.add('wrong');
+  });
+  document.getElementById('ch-feedback').innerHTML=ok
+    ?'<span class="badge badge-ok">✓ Correcto</span>'
+    :'<span class="badge badge-err">✗ Incorrecto</span>';
+  document.getElementById('ch-next-btn').classList.remove('hidden');
+}
+function nextChomsky(){
+  chIdx=(chIdx+1)%CHOMSKY_QUIZ.length;
+  renderChomsky();
+}
+
+// ===================== GRAMMAR PRACTICE =====================
+let gramIdx=0,gramScore=0,gramAnswered=false;
+function initGramPractice(){
+  gramIdx=0;gramScore=0;gramAnswered=false;
+  renderGramQuestion();
+}
+function renderGramQuestion(){
+  const q=GRAM_QUESTIONS[gramIdx];
+  document.getElementById('gram-qnum').textContent=`Pregunta ${gramIdx+1}/${GRAM_QUESTIONS.length}`;
+  document.getElementById('gram-prog').style.width=(gramIdx/GRAM_QUESTIONS.length*100)+'%';
+  document.getElementById('gram-score-disp').textContent=gramScore+' ✓';
+  document.getElementById('gram-question').innerHTML=`<span class="badge badge-warn">${q.topic}</span><br><br>${q.q}`;
+  document.getElementById('gram-options').innerHTML=q.opts.map((o,i)=>
+    `<button class="opt-btn" onclick="answerGram(${i})" id="gram-opt-${i}">${o}</button>`
+  ).join('');
+  document.getElementById('gram-feedback').innerHTML='';
+  document.getElementById('gram-next-btn').classList.add('hidden');
+  document.getElementById('gram-retry-btn').classList.add('hidden');
+  gramAnswered=false;
+}
+function answerGram(i){
+  if(gramAnswered)return;
+  gramAnswered=true;
+  const q=GRAM_QUESTIONS[gramIdx];
+  const correct=i===q.ans;
+  if(correct){gramScore++;incTotal();}
+  document.querySelectorAll('#gram-options .opt-btn').forEach((b,idx)=>{
+    b.disabled=true;
+    if(idx===q.ans)b.classList.add('correct');
+    else if(idx===i&&!correct)b.classList.add('wrong');
+  });
+  let fb=correct
+    ?`<div class="feedback-box feedback-ok">✓ <strong>¡Correcto!</strong><br>${q.explain}</div>`
+    :`<div class="feedback-box feedback-err">✗ <strong>Incorrecto.</strong><div class="hint-box">💡 ${q.hint}</div></div>`;
+  document.getElementById('gram-feedback').innerHTML=fb;
+  document.getElementById('gram-next-btn').classList.remove('hidden');
+  if(!correct)document.getElementById('gram-retry-btn').classList.remove('hidden');
+}
+function nextGramQuestion(){gramIdx=(gramIdx+1)%GRAM_QUESTIONS.length;renderGramQuestion();}
+function retryGram(){renderGramQuestion();}
+
+// ===================== EXAM =====================
+let examQuestions=[],examIdx=0,examAnswers=[],examTimer=null,examSecondsLeft=1200,examStart=0;
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5);}
+function showExamStart(){
+  document.getElementById('exam-start').classList.remove('hidden');
+  document.getElementById('exam-running').classList.add('hidden');
+  document.getElementById('exam-results').classList.add('hidden');
+  if(examTimer)clearInterval(examTimer);
+}
+function startExam(){
+  const allQ=[...RE_QUESTIONS.map(q=>({...q,module:'RE'})),...GRAM_QUESTIONS.map(q=>({...q,module:'Gramáticas'}))];
+  examQuestions=shuffle(allQ).slice(0,15);
+  examIdx=0;examAnswers=[];examSecondsLeft=1200;examStart=Date.now();
+  document.getElementById('exam-start').classList.add('hidden');
+  document.getElementById('exam-running').classList.remove('hidden');
+  document.getElementById('exam-results').classList.add('hidden');
+  renderExamQ();
+  if(examTimer)clearInterval(examTimer);
+  examTimer=setInterval(()=>{
+    examSecondsLeft--;
+    const m=Math.floor(examSecondsLeft/60),s=examSecondsLeft%60;
+    const el=document.getElementById('exam-timer');
+    el.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    el.className='timer'+(examSecondsLeft<120?' danger':examSecondsLeft<300?' warn':'');
+    if(examSecondsLeft<=0){clearInterval(examTimer);finishExam();}
+  },1000);
+}
+function renderExamQ(){
+  document.getElementById('exam-counter').textContent=`Pregunta ${examIdx+1} de ${examQuestions.length}`;
+  document.getElementById('exam-prog').style.width=(examIdx/examQuestions.length*100)+'%';
+  const q=examQuestions[examIdx];
+  const badge=q.module==='RE'?'badge-ok':'badge-warn';
+  document.getElementById('exam-question').innerHTML=`<span class="badge ${badge}">${q.module}: ${q.topic}</span><br><br>${q.q}`;
+  document.getElementById('exam-options').innerHTML=q.opts.map((o,i)=>
+    `<button class="opt-btn" onclick="answerExam(${i})">${o}</button>`
+  ).join('');
+}
+function answerExam(i){
+  const q=examQuestions[examIdx];
+  examAnswers.push({q,chosen:i,correct:i===q.ans});
+  examIdx++;
+  if(examIdx>=examQuestions.length){clearInterval(examTimer);finishExam();}
+  else renderExamQ();
+}
+function finishExam(){
+  clearInterval(examTimer);
+  progress.exams=(progress.exams||0)+1;
+  const correct=examAnswers.filter(a=>a.correct).length;
+  const pct=Math.round(correct/examQuestions.length*100);
+  const elapsed=Math.round((Date.now()-examStart)/1000);
+  const em=Math.floor(elapsed/60),es=elapsed%60;
+  // save to progress
+  progress.lastExam={score:correct,total:examQuestions.length,pct,date:new Date().toLocaleDateString()};
+  saveProgress();renderStats();
+  // show results
+  document.getElementById('exam-running').classList.add('hidden');
+  document.getElementById('exam-results').classList.remove('hidden');
+  document.getElementById('exam-final-score').textContent=`${correct}/${examQuestions.length} (${pct}%)`;
+  document.getElementById('exam-time-used').textContent=`Tiempo usado: ${em}m ${es}s`;
+  // breakdown by module
+  const reQ=examAnswers.filter(a=>a.q.module==='RE');
+  const grQ=examAnswers.filter(a=>a.q.module==='Gramáticas');
+  const reOk=reQ.filter(a=>a.correct).length;
+  const grOk=grQ.filter(a=>a.correct).length;
+  const color=pct>=80?'var(--accent)':pct>=60?'var(--warn)':'var(--err)';
+  document.getElementById('exam-final-score').style.color=color;
+  document.getElementById('exam-breakdown').innerHTML=`
+    <div class="result-item">
+      <div style="color:var(--fg2);margin-bottom:4px">Módulo A: RE</div>
+      <div class="score" style="color:${reOk/reQ.length>=.7?'var(--accent)':'var(--err)'}">${reOk}/${reQ.length}</div>
+    </div>
+    <div class="result-item">
+      <div style="color:var(--fg2);margin-bottom:4px">Módulo B: Gramáticas</div>
+      <div class="score" style="color:${grOk/grQ.length>=.7?'var(--accent)':'var(--err)'}">${grOk}/${grQ.length}</div>
+    </div>
+    <div class="result-item" style="grid-column:1/-1">
+      <div style="color:var(--fg2);margin-bottom:4px">Errores por revisar</div>
+      <div style="font-size:.8rem;color:var(--err)">
+        ${examAnswers.filter(a=>!a.correct).map(a=>`• [${a.q.topic}] ${a.q.q.replace(/<[^>]+>/g,'').substring(0,60)}...`).join('<br>')||'¡Ninguno! Perfecto ✓'}
+      </div>
+    </div>`;
+}
+// ===================== INIT =====================
+(function init(){
+  renderStats();
+  initREPractice();
+})();
+let examQuestions=[],examIdx=0,examAnswers=[],examTimer=null,examSecondsLeft=1200,examStart=0;
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5);}
+function showExamStart(){
+  document.getElementById('exam-start').classList.remove('hidden');
+  document.getElementById('exam-running').classList.add('hidden');
+  document.getElementById('exam-results').classList.add('hidden');
+  if(examTimer)clearInterval(examTimer);
+}
+function startExam(){
+  const allQ=[...RE_QUESTIONS.map(q=>({...q,module:'RE'})),...GRAM_QUESTIONS.map(q=>({...q,module:'Gramaticas'}))];
+  examQuestions=shuffle(allQ).slice(0,15);
+  examIdx=0;examAnswers=[];examSecondsLeft=1200;examStart=Date.now();
+  document.getElementById('exam-start').classList.add('hidden');
+  document.getElementById('exam-running').classList.remove('hidden');
+  document.getElementById('exam-results').classList.add('hidden');
+  renderExamQ();
+  if(examTimer)clearInterval(examTimer);
+  examTimer=setInterval(()=>{
+    examSecondsLeft--;
+    const m=Math.floor(examSecondsLeft/60),s=examSecondsLeft%60;
+    const el=document.getElementById('exam-timer');
+    el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    el.className='timer'+(examSecondsLeft<120?' danger':examSecondsLeft<300?' warn':'');
+    if(examSecondsLeft<=0){clearInterval(examTimer);finishExam();}
+  },1000);
+}
+function renderExamQ(){
+  document.getElementById('exam-counter').textContent='Pregunta '+(examIdx+1)+' de '+examQuestions.length;
+  document.getElementById('exam-prog').style.width=(examIdx/examQuestions.length*100)+'%';
+  const q=examQuestions[examIdx];
+  const badge=q.module==='RE'?'badge-ok':'badge-warn';
+  document.getElementById('exam-question').innerHTML='<span class="badge '+badge+'">'+q.module+': '+q.topic+'</span><br><br>'+q.q;
+  document.getElementById('exam-options').innerHTML=q.opts.map(function(o,i){
+    return '<button class="opt-btn" onclick="answerExam('+i+')" >'+o+'</button>';
+  }).join('');
+}
+function answerExam(i){
+  const q=examQuestions[examIdx];
+  examAnswers.push({q:q,chosen:i,correct:i===q.ans});
+  examIdx++;
+  if(examIdx>=examQuestions.length){clearInterval(examTimer);finishExam();}
+  else renderExamQ();
+}
+function finishExam(){
+  clearInterval(examTimer);
+  progress.exams=(progress.exams||0)+1;
+  const correct=examAnswers.filter(function(a){return a.correct;}).length;
+  const pct=Math.round(correct/examQuestions.length*100);
+  const elapsed=Math.round((Date.now()-examStart)/1000);
+  const em=Math.floor(elapsed/60),es=elapsed%60;
+  saveProgress();renderStats();
+  document.getElementById('exam-running').classList.add('hidden');
+  document.getElementById('exam-results').classList.remove('hidden');
+  document.getElementById('exam-final-score').textContent=correct+'/'+examQuestions.length+' ('+pct+'%)';
+  document.getElementById('exam-time-used').textContent='Tiempo: '+em+'m '+es+'s';
+  const color=pct>=80?'var(--accent)':pct>=60?'var(--warn)':'var(--err)';
+  document.getElementById('exam-final-score').style.color=color;
+  const reQ=examAnswers.filter(function(a){return a.q.module==='RE';});
+  const grQ=examAnswers.filter(function(a){return a.q.module==='Gramaticas';});
+  const reOk=reQ.filter(function(a){return a.correct;}).length;
+  const grOk=grQ.filter(function(a){return a.correct;}).length;
+  const errs=examAnswers.filter(function(a){return !a.correct;}).map(function(a){
+    return '&bull; ['+a.q.topic+'] '+a.q.q.replace(/<[^>]+>/g,'').substring(0,70)+'...';
+  }).join('<br>')||'<span style="color:var(--accent)">Ninguno. ¡Perfecto!</span>';
+  document.getElementById('exam-breakdown').innerHTML=
+    '<div class="result-item"><div style="color:var(--fg2)">Modulo A: RE</div><div class="score" style="color:'+(reOk>=reQ.length*.7?'var(--accent)':'var(--err)')+'">'+reOk+'/'+(reQ.length||'—')+'</div></div>'+
+    '<div class="result-item"><div style="color:var(--fg2)">Modulo B: Gramaticas</div><div class="score" style="color:'+(grOk>=grQ.length*.7?'var(--accent)':'var(--err)')+'">'+grOk+'/'+(grQ.length||'—')+'</div></div>'+
+    '<div class="result-item" style="grid-column:1/-1"><div style="color:var(--fg2);margin-bottom:6px">Errores para repasar:</div><div style="font-size:.8rem;color:var(--err)">'+errs+'</div></div>';
+}
+// ===================== INIT =====================
+(function(){
+  renderStats();
+  initREPractice();
+})();
+
+</script>
+</body>
+</html>
